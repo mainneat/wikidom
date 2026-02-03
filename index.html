@@ -36,7 +36,7 @@
             font-size: 14px;
         }
 
-        body, header, nav, nav::before, .article-header, .modal, .lang-select {
+        body, header, nav, nav::before, .article-header, .modal, .lang-menu {
             transition: background 0.2s, color 0.2s, border-color 0.2s;
         }
 
@@ -73,25 +73,60 @@
             align-items: center;
         }
 
-        .lang-select {
-            background: var(--bg);
+        .lang-dropdown {
+            position: relative;
+        }
+
+        .lang-toggle {
+            background: none;
+            border: 1px solid var(--text);
             color: var(--text);
-            border: none;
             font-family: inherit;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 500;
             cursor: pointer;
-            padding: 0;
-            opacity: 0.6;
+            padding: 4px 8px;
             transition: opacity 0.2s;
         }
 
-        .lang-select:hover {
-            opacity: 1;
+        .lang-toggle:hover {
+            opacity: 0.6;
         }
 
-        .lang-select:focus {
-            outline: none;
+        .lang-menu {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            background: var(--bg);
+            border: 1px solid var(--text);
+            display: none;
+            flex-direction: column;
+            z-index: 300;
+        }
+
+        .lang-menu.active {
+            display: flex;
+        }
+
+        .lang-menu button {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 12px;
+            text-align: left;
+            transition: opacity 0.2s;
+        }
+
+        .lang-menu button:hover {
+            opacity: 0.6;
+        }
+
+        .lang-menu button.active {
+            opacity: 0.4;
         }
 
         .header-btn {
@@ -426,16 +461,19 @@
         <header>
             <div class="logo" id="logo">WIKIDOM</div>
             <div class="header-actions">
-                <select class="lang-select" id="langSelect">
-                    <option value="en">EN</option>
-                    <option value="fr">FR</option>
-                    <option value="es">ES</option>
-                    <option value="de">DE</option>
-                    <option value="it">IT</option>
-                    <option value="pt">PT</option>
-                    <option value="ja">JA</option>
-                    <option value="zh">ZH</option>
-                </select>
+                <div class="lang-dropdown" id="langDropdown">
+                    <button class="lang-toggle" id="langToggle">EN</button>
+                    <div class="lang-menu" id="langMenu">
+                        <button data-lang="en">EN</button>
+                        <button data-lang="fr">FR</button>
+                        <button data-lang="es">ES</button>
+                        <button data-lang="de">DE</button>
+                        <button data-lang="it">IT</button>
+                        <button data-lang="pt">PT</button>
+                        <button data-lang="ja">JA</button>
+                        <button data-lang="zh">ZH</button>
+                    </div>
+                </div>
                 <button class="header-btn" id="savedBtn" title="Saved articles">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
@@ -508,8 +546,10 @@
         const themeToggle = document.getElementById('themeToggle');
         const savedBtn = document.getElementById('savedBtn');
         const infoBtn = document.getElementById('infoBtn');
-        const langSelect = document.getElementById('langSelect');
+        const langToggle = document.getElementById('langToggle');
+        const langMenu = document.getElementById('langMenu');
         const logo = document.getElementById('logo');
+        let currentLang = 'en';
 
         let history = [];
         let currentIndex = -1;
@@ -558,7 +598,7 @@
         });
 
         // API
-        const getLang = () => langSelect.value;
+        const getLang = () => currentLang;
         const getRandomUrl = () => `https://${getLang()}.wikipedia.org/api/rest_v1/page/random/summary`;
         const getSummaryUrl = (title) => `https://${getLang()}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
         const getFullUrl = (title) => `https://${getLang()}.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles=${encodeURIComponent(title)}&explaintext=1&origin=*`;
@@ -683,10 +723,30 @@
         savedBtn.addEventListener('click', () => openModal('savedModal'));
         infoBtn.addEventListener('click', () => openModal('infoModal'));
 
-        langSelect.addEventListener('change', () => {
-            history = [];
-            currentIndex = -1;
-            fetchArticle();
+        // Language dropdown
+        langToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            langMenu.classList.toggle('active');
+        });
+
+        langMenu.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.dataset.lang;
+                if (lang !== currentLang) {
+                    currentLang = lang;
+                    langToggle.textContent = lang.toUpperCase();
+                    langMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    history = [];
+                    currentIndex = -1;
+                    fetchArticle();
+                }
+                langMenu.classList.remove('active');
+            });
+        });
+
+        document.addEventListener('click', () => {
+            langMenu.classList.remove('active');
         });
 
         function updateNav() {
