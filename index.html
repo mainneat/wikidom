@@ -2,8 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>WIKIDOM</title>
+
+    <!-- Meta -->
+    <meta name="description" content="A minimal Wikipedia reader. Discover random articles in a distraction-free format.">
+    <meta name="theme-color" content="#000000">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="WIKIDOM">
+    <meta property="og:description" content="A minimal Wikipedia reader. Discover random articles in a distraction-free format.">
+    <meta property="og:image" content="https://wikidom.vercel.app/og-image.png">
+    <meta property="og:url" content="https://wikidom.vercel.app">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="WIKIDOM">
+    <meta name="twitter:description" content="A minimal Wikipedia reader. Discover random articles in a distraction-free format.">
+    <meta name="twitter:image" content="https://wikidom.vercel.app/og-image.png">
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -139,12 +163,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.4;
             transition: opacity 0.2s;
         }
 
         .header-btn:hover {
-            opacity: 1;
+            opacity: 0.5;
         }
 
         .header-btn svg {
@@ -407,7 +430,8 @@
             right: 0;
             max-width: 480px;
             margin: 0 auto;
-            padding: 5px 16px;
+            padding: 5px 32px;
+            padding-bottom: calc(5px + env(safe-area-inset-bottom));
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -527,7 +551,7 @@
                 <p>WIKIDOM is a minimal Wikipedia reader that serves random articles in a distraction-free format.</p>
                 <p>Navigate with arrow keys or swipe. Save articles for later. Share with friends.</p>
                 <p>Built with vanilla HTML, CSS & JS. Data from <a href="https://wikipedia.org" target="_blank">Wikipedia API</a>.</p>
-                <p>Made by Louis Gherardi — <a href="mailto:louisgherardi@me.com">Send email</a></p>
+                <p><a href="mailto:louisgherardi@me.com">Get in touch →</a></p>
             </div>
         </div>
 
@@ -580,16 +604,13 @@
         let decodeInterval = null;
 
         logo.addEventListener('mouseenter', () => {
-            let iteration = 0;
             clearInterval(decodeInterval);
             decodeInterval = setInterval(() => {
                 logo.textContent = originalText
                     .split('')
-                    .map((char, i) => i < iteration ? originalText[i] : chars[Math.floor(Math.random() * chars.length)])
+                    .map(() => chars[Math.floor(Math.random() * chars.length)])
                     .join('');
-                if (iteration >= originalText.length) clearInterval(decodeInterval);
-                iteration += 0.4;
-            }, 30);
+            }, 50);
         });
 
         logo.addEventListener('mouseleave', () => {
@@ -833,12 +854,73 @@
             }
         }
 
+        // Preload next article
+        let preloadedArticle = null;
+
+        async function preloadNext() {
+            try {
+                const sum = await fetch(getRandomUrl()).then(r => r.json());
+                const full = await fetch(getFullUrl(sum.title)).then(r => r.json());
+                const pages = full.query.pages;
+                preloadedArticle = { ...sum, fullExtract: pages[Object.keys(pages)[0]].extract || sum.extract };
+            } catch (e) {
+                preloadedArticle = null;
+            }
+        }
+
+        // Override fetchArticle to use preloaded
+        const originalFetchArticle = fetchArticle;
+        fetchArticle = async function() {
+            if (isLoading) return;
+
+            if (preloadedArticle) {
+                history = history.slice(0, currentIndex + 1);
+                history.push(preloadedArticle);
+                currentIndex = history.length - 1;
+                display(preloadedArticle);
+                updateNav();
+                preloadedArticle = null;
+                preloadNext();
+                return;
+            }
+
+            isLoading = true;
+            nextBtn.disabled = true;
+            content.innerHTML = '<div class="loading">LOADING</div>';
+
+            try {
+                const sum = await fetch(getRandomUrl()).then(r => r.json());
+                const full = await fetch(getFullUrl(sum.title)).then(r => r.json());
+                const pages = full.query.pages;
+                const article = { ...sum, fullExtract: pages[Object.keys(pages)[0]].extract || sum.extract };
+
+                history = history.slice(0, currentIndex + 1);
+                history.push(article);
+                currentIndex = history.length - 1;
+
+                display(article);
+                updateNav();
+                preloadNext();
+            } catch (e) {
+                content.innerHTML = '<div class="loading">ERROR — TAP NEXT</div>';
+            } finally {
+                isLoading = false;
+                nextBtn.disabled = false;
+            }
+        };
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+
         // Init - check for shared article
         const urlParams = new URLSearchParams(window.location.search);
         const sharedArticle = urlParams.get('article');
 
         if (sharedArticle) {
             fetchSpecificArticle(sharedArticle);
+            preloadNext();
         } else {
             fetchArticle();
         }
