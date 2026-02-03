@@ -36,7 +36,7 @@
             font-size: 14px;
         }
 
-        body, header, nav, nav::before, .article-header {
+        body, header, nav, nav::before, .article-header, .modal {
             transition: background 0.2s, color 0.2s, border-color 0.2s;
         }
 
@@ -67,7 +67,13 @@
             letter-spacing: 0.1em;
         }
 
-        .theme-toggle {
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .header-btn {
             background: none;
             border: none;
             cursor: pointer;
@@ -77,18 +83,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.5;
+            opacity: 0.4;
             transition: opacity 0.2s;
         }
 
-        .theme-toggle:hover {
+        .header-btn:hover {
             opacity: 1;
         }
 
-        .theme-toggle svg {
+        .header-btn svg {
             width: 14px;
             height: 14px;
+            stroke: var(--text);
+            fill: none;
+        }
+
+        .header-btn#themeToggle svg {
             fill: var(--text);
+            stroke: none;
         }
 
         main {
@@ -106,7 +118,7 @@
 
         .article-header {
             position: sticky;
-            top: 40px;
+            top: 38px;
             background: var(--bg);
             padding-bottom: 16px;
             margin-bottom: 8px;
@@ -182,6 +194,146 @@
             color: var(--text);
         }
 
+        .save-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .save-btn svg {
+            width: 12px;
+            height: 12px;
+            stroke: currentColor;
+            fill: none;
+            transition: fill 0.2s;
+        }
+
+        .save-btn.saved svg {
+            fill: currentColor;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 40px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg);
+            z-index: 90;
+            padding: 16px;
+            max-width: 480px;
+            margin: 0 auto;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--dim);
+            font-family: inherit;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .saved-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .saved-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .saved-item-content {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .saved-item-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            transition: opacity 0.2s;
+        }
+
+        .saved-item-content:hover .saved-item-title {
+            opacity: 0.7;
+        }
+
+        .saved-item-desc {
+            font-size: 11px;
+            color: var(--dim);
+        }
+
+        .saved-item-remove {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 10px;
+            color: var(--dim);
+            font-family: inherit;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .saved-item-remove:hover {
+            color: var(--text);
+        }
+
+        .empty-state {
+            color: var(--dim);
+            font-size: 11px;
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .info-content {
+            font-size: 12px;
+            line-height: 1.8;
+            color: var(--dim);
+        }
+
+        .info-content p {
+            margin-bottom: 16px;
+        }
+
+        .info-content a {
+            color: var(--text);
+            text-decoration: none;
+        }
+
         .loading {
             display: flex;
             align-items: center;
@@ -199,20 +351,19 @@
             right: 0;
             max-width: 480px;
             margin: 0 auto;
-            padding: 7px 16px;
-            padding-top: 10px;
+            padding: 5px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--bg);
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--text);
             z-index: 100;
         }
 
         nav::before {
             content: '';
             position: absolute;
-            top: -5px;
+            top: -6px;
             left: 0;
             right: 0;
             height: 5px;
@@ -224,19 +375,20 @@
             border: none;
             color: var(--text);
             cursor: pointer;
-            padding: 4px;
-            opacity: 0.5;
+            padding: 4px 0;
             transition: opacity 0.2s;
             font-family: inherit;
-            font-size: 11px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
         }
 
         .nav-btn:hover:not(:disabled) {
-            opacity: 1;
+            opacity: 0.6;
         }
 
         .nav-btn:disabled {
-            opacity: 0.15;
+            opacity: 0.25;
             cursor: not-allowed;
         }
 
@@ -251,27 +403,63 @@
     <div class="container">
         <header>
             <div class="logo" id="logo">WIKIDOM</div>
-            <button class="theme-toggle" id="themeToggle">
-                <svg class="sun-icon" viewBox="0 0 24 24" style="display: none;">
-                    <circle cx="12" cy="12" r="5"/>
-                    <line x1="12" y1="1" x2="12" y2="3" stroke="var(--text)" stroke-width="2"/>
-                    <line x1="12" y1="21" x2="12" y2="23" stroke="var(--text)" stroke-width="2"/>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="var(--text)" stroke-width="2"/>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="var(--text)" stroke-width="2"/>
-                    <line x1="1" y1="12" x2="3" y2="12" stroke="var(--text)" stroke-width="2"/>
-                    <line x1="21" y1="12" x2="23" y2="12" stroke="var(--text)" stroke-width="2"/>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="var(--text)" stroke-width="2"/>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="var(--text)" stroke-width="2"/>
-                </svg>
-                <svg class="moon-icon" viewBox="0 0 24 24">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                </svg>
-            </button>
+            <div class="header-actions">
+                <button class="header-btn" id="savedBtn" title="Saved articles">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </button>
+                <button class="header-btn" id="infoBtn" title="Info">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                </button>
+                <button class="header-btn" id="themeToggle" title="Toggle theme">
+                    <svg class="sun-icon" viewBox="0 0 24 24" style="display: none;">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3" stroke="var(--text)" stroke-width="2"/>
+                        <line x1="12" y1="21" x2="12" y2="23" stroke="var(--text)" stroke-width="2"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="var(--text)" stroke-width="2"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="var(--text)" stroke-width="2"/>
+                        <line x1="1" y1="12" x2="3" y2="12" stroke="var(--text)" stroke-width="2"/>
+                        <line x1="21" y1="12" x2="23" y2="12" stroke="var(--text)" stroke-width="2"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="var(--text)" stroke-width="2"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="var(--text)" stroke-width="2"/>
+                    </svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+            </div>
         </header>
 
         <main id="content">
             <div class="loading">LOADING</div>
         </main>
+
+        <!-- Saved Modal -->
+        <div class="modal" id="savedModal">
+            <div class="modal-header">
+                <div class="modal-title">SAVED ARTICLES</div>
+                <button class="modal-close" onclick="closeModal('savedModal')">CLOSE</button>
+            </div>
+            <div class="saved-list" id="savedList"></div>
+        </div>
+
+        <!-- Info Modal -->
+        <div class="modal" id="infoModal">
+            <div class="modal-header">
+                <div class="modal-title">INFO</div>
+                <button class="modal-close" onclick="closeModal('infoModal')">CLOSE</button>
+            </div>
+            <div class="info-content">
+                <p>WIKIDOM is a minimal Wikipedia reader that serves random articles in a distraction-free format.</p>
+                <p>Navigate with arrow keys or swipe. Save articles for later. Share with friends.</p>
+                <p>Built with vanilla HTML, CSS & JS. Data from <a href="https://wikipedia.org" target="_blank">Wikipedia API</a>.</p>
+                <p>Made by Louis Gherardi</p>
+            </div>
+        </div>
 
         <nav>
             <button class="nav-btn" id="prevBtn" disabled>← PREV</button>
@@ -286,12 +474,15 @@
         const nextBtn = document.getElementById('nextBtn');
         const navInfo = document.getElementById('navInfo');
         const themeToggle = document.getElementById('themeToggle');
+        const savedBtn = document.getElementById('savedBtn');
+        const infoBtn = document.getElementById('infoBtn');
         const logo = document.getElementById('logo');
         const lang = 'en';
 
         let history = [];
         let currentIndex = -1;
         let isLoading = false;
+        let savedArticles = JSON.parse(localStorage.getItem('savedArticles') || '[]');
 
         // Theme
         const sunIcon = document.querySelector('.sun-icon');
@@ -304,7 +495,7 @@
             moonIcon.style.display = theme === 'light' ? 'block' : 'none';
         }
 
-        setTheme(localStorage.getItem('theme') || 'dark');
+        setTheme(localStorage.getItem('theme') || 'light');
 
         themeToggle.addEventListener('click', () => {
             const current = document.documentElement.getAttribute('data-theme');
@@ -352,9 +543,14 @@
             }, { result: '', inP: false }).result;
         }
 
+        function isSaved(title) {
+            return savedArticles.some(a => a.title === title);
+        }
+
         function display(article) {
             const text = article.fullExtract || article.extract;
             const shareUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(article.title)}`;
+            const saved = isSaved(article.title);
 
             content.innerHTML = `
                 <div class="article">
@@ -364,6 +560,10 @@
                     </div>
                     <div class="article-content">${formatContent(text)}</div>
                     <div class="article-footer">
+                        <button class="save-btn ${saved ? 'saved' : ''}" onclick="toggleSave()">
+                            <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                            ${saved ? 'SAVED' : 'SAVE ARTICLE'}
+                        </button>
                         <button class="share-btn" onclick="shareArticle('${shareUrl}', '${article.title.replace(/'/g, "\\'")}')">SHARE ARTICLE →</button>
                         <a href="${article.content_urls.desktop.page}" target="_blank">READ ON WIKIPEDIA →</a>
                     </div>
@@ -388,6 +588,67 @@
                 }, 2000);
             }
         }
+
+        function toggleSave() {
+            const article = history[currentIndex];
+            if (!article) return;
+
+            const idx = savedArticles.findIndex(a => a.title === article.title);
+            if (idx > -1) {
+                savedArticles.splice(idx, 1);
+            } else {
+                savedArticles.unshift({
+                    title: article.title,
+                    description: article.description || '',
+                    url: article.content_urls.desktop.page
+                });
+            }
+
+            localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
+            display(article);
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            if (id === 'savedModal') renderSavedList();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function renderSavedList() {
+            const list = document.getElementById('savedList');
+
+            if (savedArticles.length === 0) {
+                list.innerHTML = '<div class="empty-state">NO SAVED ARTICLES YET</div>';
+                return;
+            }
+
+            list.innerHTML = savedArticles.map((a, i) => `
+                <div class="saved-item">
+                    <div class="saved-item-content" onclick="loadSavedArticle('${a.title.replace(/'/g, "\\'")}')">
+                        <div class="saved-item-title">${a.title}</div>
+                        <div class="saved-item-desc">${a.description}</div>
+                    </div>
+                    <button class="saved-item-remove" onclick="removeSaved(${i})">REMOVE</button>
+                </div>
+            `).join('');
+        }
+
+        function removeSaved(idx) {
+            savedArticles.splice(idx, 1);
+            localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
+            renderSavedList();
+        }
+
+        function loadSavedArticle(title) {
+            closeModal('savedModal');
+            fetchSpecificArticle(title);
+        }
+
+        savedBtn.addEventListener('click', () => openModal('savedModal'));
+        infoBtn.addEventListener('click', () => openModal('infoModal'));
 
         function updateNav() {
             prevBtn.disabled = currentIndex <= 0;
@@ -432,6 +693,16 @@
         nextBtn.addEventListener('click', fetchArticle);
 
         document.addEventListener('keydown', (e) => {
+            // Close modals with Escape
+            if (e.key === 'Escape') {
+                closeModal('savedModal');
+                closeModal('infoModal');
+                return;
+            }
+
+            // Don't navigate if modal is open
+            if (document.querySelector('.modal.active')) return;
+
             if (e.key === 'ArrowLeft') goPrev();
             if (e.key === 'ArrowRight' || e.key === ' ') {
                 e.preventDefault();
