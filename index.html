@@ -8,12 +8,19 @@
     <!-- Meta -->
     <meta name="description" content="A minimal Wikipedia reader. Discover random articles in a distraction-free format.">
     <meta name="theme-color" content="#000000">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://wikidom.vercel.app">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="WIKIDOM">
+    <meta property="og:locale" content="en_US">
     <meta property="og:title" content="WIKIDOM">
     <meta property="og:description" content="A minimal Wikipedia reader. Discover random articles in a distraction-free format.">
     <meta property="og:image" content="https://wikidom.vercel.app/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="WIKIDOM - A minimal Wikipedia reader">
     <meta property="og:url" content="https://wikidom.vercel.app">
 
     <!-- Twitter -->
@@ -21,6 +28,7 @@
     <meta name="twitter:title" content="WIKIDOM">
     <meta name="twitter:description" content="A minimal Wikipedia reader. Discover random articles in a distraction-free format.">
     <meta name="twitter:image" content="https://wikidom.vercel.app/og-image.png">
+    <meta name="twitter:image:alt" content="WIKIDOM - A minimal Wikipedia reader">
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
@@ -124,7 +132,7 @@
             top: calc(100% + 4px);
             right: 0;
             background: var(--bg);
-            border: 1px solid var(--text);
+            border: 0.5px solid var(--text);
             display: none;
             flex-direction: column;
             z-index: 300;
@@ -187,7 +195,7 @@
         main {
             position: fixed;
             top: 67px;
-            bottom: 70px;
+            bottom: calc(70px + env(safe-area-inset-bottom));
             left: 16px;
             right: 16px;
             max-width: 448px;
@@ -512,16 +520,16 @@
             <div class="logo" id="logo">WIKIDOM</div>
             <div class="header-actions">
                 <div class="lang-dropdown" id="langDropdown">
-                    <button class="lang-toggle" id="langToggle">EN</button>
+                    <button class="lang-toggle" id="langToggle">English</button>
                     <div class="lang-menu" id="langMenu">
-                        <button data-lang="en">EN</button>
-                        <button data-lang="fr">FR</button>
-                        <button data-lang="es">ES</button>
-                        <button data-lang="de">DE</button>
-                        <button data-lang="it">IT</button>
-                        <button data-lang="pt">PT</button>
-                        <button data-lang="ja">JA</button>
-                        <button data-lang="zh">ZH</button>
+                        <button data-lang="en">English</button>
+                        <button data-lang="fr">Français</button>
+                        <button data-lang="es">Español</button>
+                        <button data-lang="de">Deutsch</button>
+                        <button data-lang="it">Italiano</button>
+                        <button data-lang="pt">Português</button>
+                        <button data-lang="ja">日本語</button>
+                        <button data-lang="zh">中文</button>
                     </div>
                 </div>
                 <button class="header-btn" id="savedBtn" title="Saved articles">
@@ -808,7 +816,7 @@
                 const lang = btn.dataset.lang;
                 if (lang !== currentLang) {
                     currentLang = lang;
-                    langToggle.textContent = lang.toUpperCase();
+                    langToggle.textContent = btn.textContent;
                     langMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     history = [];
