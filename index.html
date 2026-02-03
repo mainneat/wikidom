@@ -36,7 +36,7 @@
             font-size: 14px;
         }
 
-        body, header, nav, nav::before, .article-header, .modal {
+        body, header, nav, nav::before, .article-header, .modal, .lang-select {
             transition: background 0.2s, color 0.2s, border-color 0.2s;
         }
 
@@ -71,6 +71,27 @@
             display: flex;
             gap: 16px;
             align-items: center;
+        }
+
+        .lang-select {
+            background: var(--bg);
+            color: var(--text);
+            border: none;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .lang-select:hover {
+            opacity: 1;
+        }
+
+        .lang-select:focus {
+            outline: none;
         }
 
         .header-btn {
@@ -398,12 +419,23 @@
             letter-spacing: 0.1em;
         }
     </style>
+    <script defer src="https://va.vercel-scripts.com/v1/script.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <div class="logo" id="logo">WIKIDOM</div>
             <div class="header-actions">
+                <select class="lang-select" id="langSelect">
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
+                    <option value="es">ES</option>
+                    <option value="de">DE</option>
+                    <option value="it">IT</option>
+                    <option value="pt">PT</option>
+                    <option value="ja">JA</option>
+                    <option value="zh">ZH</option>
+                </select>
                 <button class="header-btn" id="savedBtn" title="Saved articles">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
@@ -476,8 +508,8 @@
         const themeToggle = document.getElementById('themeToggle');
         const savedBtn = document.getElementById('savedBtn');
         const infoBtn = document.getElementById('infoBtn');
+        const langSelect = document.getElementById('langSelect');
         const logo = document.getElementById('logo');
-        const lang = 'en';
 
         let history = [];
         let currentIndex = -1;
@@ -526,9 +558,10 @@
         });
 
         // API
-        const getRandomUrl = () => `https://${lang}.wikipedia.org/api/rest_v1/page/random/summary`;
-        const getSummaryUrl = (title) => `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-        const getFullUrl = (title) => `https://${lang}.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles=${encodeURIComponent(title)}&explaintext=1&origin=*`;
+        const getLang = () => langSelect.value;
+        const getRandomUrl = () => `https://${getLang()}.wikipedia.org/api/rest_v1/page/random/summary`;
+        const getSummaryUrl = (title) => `https://${getLang()}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+        const getFullUrl = (title) => `https://${getLang()}.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles=${encodeURIComponent(title)}&explaintext=1&origin=*`;
 
         function formatContent(text) {
             let html = text
@@ -649,6 +682,12 @@
 
         savedBtn.addEventListener('click', () => openModal('savedModal'));
         infoBtn.addEventListener('click', () => openModal('infoModal'));
+
+        langSelect.addEventListener('change', () => {
+            history = [];
+            currentIndex = -1;
+            fetchArticle();
+        });
 
         function updateNav() {
             prevBtn.disabled = currentIndex <= 0;
